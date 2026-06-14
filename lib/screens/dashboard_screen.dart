@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 
+import '../state/work_record_state.dart';
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final workRecordState = WorkRecordScope.of(context);
+    final totalOtHours = _formatNumber(workRecordState.totalOtHours);
+    final totalTravelCost = _formatCurrency(workRecordState.totalTravelCost);
+    final totalRecords = workRecordState.totalRecords.toString();
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
@@ -13,25 +20,20 @@ class DashboardScreen extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20),
             gradient: const LinearGradient(
-              colors: [
-                Color(0xFF00C2A8),
-                Color(0xFF009688),
-              ],
+              colors: [Color(0xFF00C2A8), Color(0xFF009688)],
             ),
           ),
-          child: const Column(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'รายได้รวม',
-                style: TextStyle(
-                  color: Colors.white,
-                ),
+              const Text(
+                'ค่าเดินทางรวม',
+                style: TextStyle(color: Colors.white),
               ),
-              SizedBox(height: 8),
+              const SizedBox(height: 8),
               Text(
-                '฿39,113',
-                style: TextStyle(
+                totalTravelCost,
+                style: const TextStyle(
                   color: Colors.white,
                   fontSize: 34,
                   fontWeight: FontWeight.bold,
@@ -40,67 +42,49 @@ class DashboardScreen extends StatelessWidget {
             ],
           ),
         ),
-
         const SizedBox(height: 16),
-
         Row(
-          children: const [
+          children: [
             Expanded(
-              child: SummaryCard(
-                title: 'OT รวม',
-                value: '฿19,213',
-              ),
+              child: SummaryCard(title: 'OT รวม', value: '$totalOtHours ชม.'),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
-              child: SummaryCard(
-                title: 'ค่าเดินทาง',
-                value: '฿900',
-              ),
+              child: SummaryCard(title: 'ค่าเดินทาง', value: totalTravelCost),
             ),
           ],
         ),
-
-        SizedBox(height: 12),
-
+        const SizedBox(height: 12),
         Row(
-          children: const [
+          children: [
             Expanded(
-              child: SummaryCard(
-                title: 'รายได้สุทธิ',
-                value: '฿38,263',
-              ),
+              child: SummaryCard(title: 'รายการ', value: totalRecords),
             ),
-            SizedBox(width: 12),
+            const SizedBox(width: 12),
             Expanded(
-              child: SummaryCard(
-                title: 'คงเหลือ',
-                value: '฿22,113',
-              ),
+              child: SummaryCard(title: 'บันทึกแล้ว', value: totalRecords),
             ),
           ],
         ),
-
-        SizedBox(height: 20),
-
+        const SizedBox(height: 20),
         Card(
           child: Padding(
-            padding: EdgeInsets.all(16),
+            padding: const EdgeInsets.all(16),
             child: Column(
               children: [
                 ListTile(
-                  title: Text('วันทำงาน'),
-                  trailing: Text('19 วัน'),
+                  title: const Text('จำนวนรายการ'),
+                  trailing: Text(totalRecords),
                 ),
-                Divider(),
+                const Divider(),
                 ListTile(
-                  title: Text('วันหยุด'),
-                  trailing: Text('4 วัน'),
+                  title: const Text('OT รวม'),
+                  trailing: Text(totalOtHours),
                 ),
-                Divider(),
+                const Divider(),
                 ListTile(
-                  title: Text('วันนักขัตฤกษ์'),
-                  trailing: Text('2 วัน'),
+                  title: const Text('ค่าเดินทางรวม'),
+                  trailing: Text(totalTravelCost),
                 ),
               ],
             ),
@@ -109,17 +93,29 @@ class DashboardScreen extends StatelessWidget {
       ],
     );
   }
+
+  String _formatNumber(double value) {
+    if (value == value.roundToDouble()) {
+      return value.toStringAsFixed(0);
+    }
+
+    return value.toStringAsFixed(2);
+  }
+
+  String _formatCurrency(double value) {
+    if (value == value.roundToDouble()) {
+      return '฿${value.toStringAsFixed(0)}';
+    }
+
+    return '฿${value.toStringAsFixed(2)}';
+  }
 }
 
 class SummaryCard extends StatelessWidget {
   final String title;
   final String value;
 
-  const SummaryCard({
-    super.key,
-    required this.title,
-    required this.value,
-  });
+  const SummaryCard({super.key, required this.title, required this.value});
 
   @override
   Widget build(BuildContext context) {

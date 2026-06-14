@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../models/work_record.dart';
+import '../state/work_record_state.dart';
+
 class RecordScreen extends StatefulWidget {
   const RecordScreen({super.key});
 
@@ -15,6 +18,68 @@ class _RecordScreenState extends State<RecordScreen> {
   final travelController = TextEditingController();
 
   @override
+  void dispose() {
+    dateController.dispose();
+    startController.dispose();
+    endController.dispose();
+    otController.dispose();
+    travelController.dispose();
+    super.dispose();
+  }
+
+  void saveRecord() {
+    final date = dateController.text.trim();
+    final checkIn = startController.text.trim();
+    final checkOut = endController.text.trim();
+    final otText = otController.text.trim();
+    final travelText = travelController.text.trim();
+
+    if (date.isEmpty ||
+        checkIn.isEmpty ||
+        checkOut.isEmpty ||
+        otText.isEmpty ||
+        travelText.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please fill in all required fields.')),
+      );
+      return;
+    }
+
+    final otHours = double.tryParse(otText);
+    final travelCost = double.tryParse(travelText);
+
+    if (otHours == null || travelCost == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please enter valid numbers for OT and travel cost.'),
+        ),
+      );
+      return;
+    }
+
+    WorkRecordScope.of(context).addRecord(
+      WorkRecord(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        date: date,
+        checkIn: checkIn,
+        checkOut: checkOut,
+        otHours: otHours,
+        travelCost: travelCost,
+      ),
+    );
+
+    dateController.clear();
+    startController.clear();
+    endController.clear();
+    otController.clear();
+    travelController.clear();
+
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(const SnackBar(content: Text('บันทึกข้อมูลสำเร็จ')));
+  }
+
+  @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
       padding: const EdgeInsets.all(20),
@@ -23,14 +88,9 @@ class _RecordScreenState extends State<RecordScreen> {
         children: [
           const Text(
             'บันทึกเวลาทำงาน',
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
           ),
-
           const SizedBox(height: 20),
-
           TextField(
             controller: dateController,
             decoration: const InputDecoration(
@@ -38,9 +98,7 @@ class _RecordScreenState extends State<RecordScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 16),
-
           TextField(
             controller: startController,
             decoration: const InputDecoration(
@@ -48,9 +106,7 @@ class _RecordScreenState extends State<RecordScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 16),
-
           TextField(
             controller: endController,
             decoration: const InputDecoration(
@@ -58,9 +114,7 @@ class _RecordScreenState extends State<RecordScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 16),
-
           TextField(
             controller: otController,
             keyboardType: TextInputType.number,
@@ -69,9 +123,7 @@ class _RecordScreenState extends State<RecordScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 16),
-
           TextField(
             controller: travelController,
             keyboardType: TextInputType.number,
@@ -80,20 +132,12 @@ class _RecordScreenState extends State<RecordScreen> {
               border: OutlineInputBorder(),
             ),
           ),
-
           const SizedBox(height: 24),
-
           SizedBox(
             width: double.infinity,
             height: 55,
             child: ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('บันทึกข้อมูลสำเร็จ'),
-                  ),
-                );
-              },
+              onPressed: saveRecord,
               icon: const Icon(Icons.save),
               label: const Text('บันทึกข้อมูล'),
             ),
